@@ -1,0 +1,5 @@
+<linker>
+  <assembly fullname="unity-webview">
+    <type fullname="Gree.UnityWebView.WebViewObject" preserve="all" />
+  </assembly>
+</linker>

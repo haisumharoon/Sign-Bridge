@@ -1,0 +1,66 @@
+fileFormatVersion: 2
+guid: 50f6239e28464e47b48bf029e7e22d0c
+timeCreated: 1777131500
+licenseType: Free
+PluginImporter:
+  serializedVersion: 2
+  iconMap: {}
+  executionOrder: {}
+  isPreloaded: 0
+  isOverridable: 0
+  platformData:
+    data:
+      first:
+        Android: Android
+      second:
+        enabled: 1
+        settings: {}
+    data:
+      first:
+        Any:
+      second:
+        enabled: 0
+        settings: {}
+    data:
+      first:
+        Editor: Editor
+      second:
+        enabled: 0
+        settings:
+          DefaultValueInitialized: true
+  userData:
+  assetBundleName:
+  assetBundleVariant:
+fileFormatVersion: 2
+guid: b3e7f1a2c4d58096b3e7f1a2c4d58096
+PluginImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  iconMap: {}
+  executionOrder: {}
+  defineConstraints: []
+  isPreloaded: 0
+  isOverridable: 0
+  isExplicitlyReferenced: 0
+  validateReferences: 1
+  platformData:
+  - first:
+      Android: Android
+    second:
+      enabled: 1
+      settings:
+        CPU: AnyCPU
+  - first:
+      Any:
+    second:
+      enabled: 1
+      settings: {}
+  - first:
+      Editor: Editor
+    second:
+      enabled: 0
+      settings:
+        DefaultValueInitialized: true
+  userData:
+  assetBundleName:
+  assetBundleVariant:

@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en" class="sb-theme-dark sb-cb-none">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>SignBridge</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2230;
+      --line: #2d3a4d;
+      --text: #e8eaed;
+      --muted: #8b95a8;
+      --accent: #5b9cf7;
+      --btn-active: #242d3d;
+      --accent-text: #0f1419;
+    }
+    html.sb-theme-light {
+      --bg: #f2f4f8;
+      --surface: #ffffff;
+      --line: #d0d7e2;
+      --text: #1a2230;
+      --muted: #5c6575;
+      --accent: #2a6fd9;
+      --btn-active: #e8ecf4;
+      --accent-text: #ffffff;
+    }
+    html.sb-theme-light.sb-cb-highContrast {
+      --bg: #ffffff;
+      --surface: #f0f2f6;
+      --line: #000000;
+      --text: #000000;
+      --muted: #1a1a1a;
+      --accent: #0000c8;
+      --btn-active: #dde0e8;
+      --accent-text: #ffffff;
+    }
+    html.sb-theme-dark.sb-cb-highContrast {
+      --bg: #000000;
+      --surface: #0a0c10;
+      --line: #3d4656;
+      --text: #ffffff;
+      --muted: #c8cdd8;
+      --accent: #ffd400;
+      --btn-active: #1a1f2a;
+      --accent-text: #000000;
+    }
+    html.sb-cb-protanopia { --accent: #2a9fd6; }
+    html.sb-theme-light.sb-cb-protanopia { --accent: #0077b3; }
+    html.sb-cb-deuteranopia { --accent: #3a78f0; }
+    html.sb-theme-light.sb-cb-deuteranopia { --accent: #2456c9; }
+    html.sb-cb-tritanopia { --accent: #6a9a3a; }
+    html.sb-theme-light.sb-cb-tritanopia { --accent: #4a7a28; }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      height: 100%;
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 16px;
+      -webkit-tap-highlight-color: transparent;
+      background: var(--bg);
+    }
+    #app {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: max(12px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+    }
+    .panel {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .panel.active { display: flex; }
+
+    .panel--menu {
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    /* ── Mode selection cards ─────────────────────────────── */
+    .mode-cards {
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .mode-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 18px 16px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      cursor: pointer;
+      text-align: left;
+      font: inherit;
+      color: var(--text);
+      width: 100%;
+    }
+    .mode-card:active { background: var(--btn-active); }
+    .mode-card--primary {
+      border-color: var(--accent);
+      background: linear-gradient(135deg,rgba(91,156,247,0.12),rgba(91,156,247,0.04));
+    }
+    .mode-card--primary:active { opacity: 0.88; }
+    .mode-icon {
+      font-size: 2rem;
+      line-height: 1;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .mode-info { display: flex; flex-direction: column; gap: 4px; }
+    .mode-title { font-size: 1rem; font-weight: 600; }
+    .mode-desc  { font-size: 0.8125rem; color: var(--muted); line-height: 1.45; }
+    .mode-badge {
+      display: inline-block;
+      margin-top: 4px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: var(--accent);
+      color: var(--accent-text);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    /* AR scanning hint bar */
+    #ar-hint {
+      display: none;
+      position: fixed;
+      bottom: max(24px, env(safe-area-inset-bottom));
+      left: 16px; right: 16px;
+      background: rgba(15,20,25,0.90);
+      color: #e8eaed;
+      border: 1px solid rgba(91,156,247,0.35);
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 0.875rem;
+      text-align: center;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+    .stack {
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .logo {
+      width: min(44vw, 160px);
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      border-radius: 8px;
+    }
+    h1 {
+      margin: 8px 0 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .muted {
+      margin: 0;
+      font-size: 0.875rem;
+      color: var(--muted);
+      font-weight: 400;
+    }
+    .btn-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+    }
+    button.btn {
+      display: block;
+      width: 100%;
+      margin: 0;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+      font-weight: 500;
+      font-size: 0.9375rem;
+      text-align: center;
+      cursor: pointer;
+    }
+    button.btn:active { background: var(--btn-active); }
+    button.btn--solid {
+      background: var(--accent);
+      color: var(--accent-text);
+      border-color: var(--accent);
+    }
+    button.btn--solid:active { opacity: 0.92; }
+
+    button.back {
+      align-self: flex-start;
+      padding: 8px 12px;
+      margin-bottom: 4px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    button.back:active { color: var(--text); }
+
+    h2 {
+      margin: 0 0 8px;
+      font-size: 1.125rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      text-align: center;
+      width: 100%;
+    }
+    .inner {
+      align-items: center;
+    }
+    .inner .btn-row { max-width: 360px; }
+
+    .scroll {
+      flex: 1;
+      width: 100%;
+      max-width: 400px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+      padding: 4px 0;
+      margin-top: 4px;
+    }
+    button.list-item {
+      display: block;
+      width: 100%;
+      margin: 0;
+      padding: 12px 16px;
+      border: none;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+      font-size: 0.9375rem;
+      font-weight: 400;
+      text-align: left;
+      cursor: pointer;
+    }
+    button.list-item:last-child { border-bottom: none; }
+    button.list-item:active { background: var(--btn-active); }
+
+    .note {
+      max-width: 360px;
+      margin: 0;
+      padding: 16px;
+      font-size: 0.875rem;
+      color: var(--muted);
+      line-height: 1.5;
+      text-align: center;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+    }
+
+    .settings-block {
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto 16px;
+      text-align: left;
+    }
+    .settings-block h3 {
+      margin: 0 0 8px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+    }
+    .seg {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .seg button {
+      flex: 1 1 auto;
+      min-width: 0;
+      margin: 0;
+      padding: 10px 8px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .seg button.on {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: var(--accent-text);
+    }
+    .seg button:active:not(.on) { background: var(--btn-active); }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <section id="view-menu" class="panel active panel--menu">
+      <div class="stack">
+        <img src="logo.png" class="logo" alt="" onerror="this.style.display='none'" />
+        <h1>SignBridge</h1>
+        <p class="muted">Sign language</p>
+        <div class="btn-row">
+          <button type="button" class="btn btn--solid" onclick="go('mode-select')">Start</button>
+          <button type="button" class="btn" onclick="go('learn-hub')">Learn</button>
+          <button type="button" class="btn" onclick="go('vocab')">Vocabulary</button>
+          <button type="button" class="btn" onclick="go('help')">Help</button>
+          <button type="button" class="btn" onclick="go('settings')">Settings</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Mode Selection ────────────────────────────────────────── -->
+    <section id="view-mode-select" class="panel inner">
+      <button type="button" class="back" onclick="go('menu')">← Back</button>
+      <h2>Choose Mode</h2>
+      <p class="muted" style="margin:0 0 20px;text-align:center;">How would you like to use SignBridge?</p>
+      <div class="mode-cards">
+
+        <button type="button" class="mode-card mode-card--primary" onclick="send({action:'openVoice'})">
+          <div class="mode-icon">🎙️</div>
+          <div class="mode-info">
+            <div class="mode-title">Voice Mode</div>
+            <div class="mode-desc">Speak and see sign animations overlaid on your camera feed.</div>
+            <span class="mode-badge">Classic</span>
+          </div>
+        </button>
+
+        <button type="button" class="mode-card" id="btn-ar-mode" onclick="startArMode()">
+          <div class="mode-icon">🌐</div>
+          <div class="mode-info">
+            <div class="mode-title">AR Surface Mode</div>
+            <div class="mode-desc">Place sign animations on a real-world flat surface using your camera.</div>
+            <span class="mode-badge" style="background:var(--muted);color:var(--bg);">AR</span>
+          </div>
+        </button>
+
+      </div>
+    </section>
+
+    <section id="view-learn-hub" class="panel inner">
+      <button type="button" class="back" onclick="go('menu')">Back</button>
+      <h2>Learn</h2>
+      <p class="muted" style="margin:0 0 12px;text-align:center;">Words and alphabet clips</p>
+      <div class="btn-row">
+        <button type="button" class="btn" onclick="go('learn-words')">Words</button>
+        <button type="button" class="btn" onclick="go('learn-alpha')">Alphabet</button>
+      </div>
+    </section>
+
+    <section id="view-learn-words" class="panel inner">
+      <button type="button" class="back" onclick="go('learn-hub')">Back</button>
+      <h2>Words</h2>
+      <div id="list-words" class="scroll" role="list"></div>
+    </section>
+
+    <section id="view-learn-alpha" class="panel inner">
+      <button type="button" class="back" onclick="go('learn-hub')">Back</button>
+      <h2>Alphabet</h2>
+      <div id="list-alpha" class="scroll" role="list"></div>
+    </section>
+
+    <section id="view-vocab" class="panel inner">
+      <button type="button" class="back" onclick="go('menu')">Back</button>
+      <h2>Vocabulary</h2>
+      <p class="muted" style="margin:0 0 8px;text-align:center;">All clips</p>
+      <div id="list-vocab" class="scroll" role="list"></div>
+    </section>
+
+    <section id="view-settings" class="panel inner">
+      <button type="button" class="back" onclick="go('menu')">Back</button>
+      <h2>Settings</h2>
+      <p class="muted" style="margin:0 0 16px;text-align:center;">Theme and color vision apply to this menu and the sign camera view.</p>
+      <div class="settings-block">
+        <h3>Theme</h3>
+        <div class="seg" id="seg-theme" role="group" aria-label="Theme">
+          <button type="button" data-theme="dark">Dark</button>
+          <button type="button" data-theme="light">Light</button>
+        </div>
+      </div>
+      <div class="settings-block">
+        <h3>Color vision</h3>
+        <div class="seg" id="seg-colorblind" role="group" aria-label="Color vision assist">
+          <button type="button" data-cb="none">Default</button>
+          <button type="button" data-cb="highContrast">Contrast</button>
+          <button type="button" data-cb="protanopia">Proto</button>
+          <button type="button" data-cb="deuteranopia">Deuto</button>
+          <button type="button" data-cb="tritanopia">Trito</button>
+        </div>
+      </div>
+      <p class="note" style="margin-top:8px;">Assist modes approximate common needs; they are not medical calibration. AR tint uses device rendering when available.</p>
+    </section>
+
+    <section id="view-help" class="panel inner">
+      <button type="button" class="back" onclick="go('menu')">Back</button>
+      <h2>Help</h2>
+      <div class="note" style="text-align:left; max-width: 420px;">
+        <p style="margin:0 0 10px;">Start opens voice mode. Learn plays individual sign clips. Vocabulary keeps clips in the shell when possible.</p>
+        <p style="margin:0;">If you only see a blank screen on device, wait a moment for the Unity webview package to resolve, then relaunch the app.</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- AR scanning hint overlay -->
+  <div id="ar-hint">
+    <span id="ar-hint-text">Point your camera at a flat surface…</span>
+  </div>
+
+  <script>
+    window.__sbAppearance = { theme: 'dark', colorBlind: 'none' };
+    (function () {
+      try {
+        var t = localStorage.getItem('sb_theme');
+        var c = localStorage.getItem('sb_colorBlind');
+        if (t && c) {
+          window.__sbAppearance.theme = t === 'light' ? 'light' : 'dark';
+          window.__sbAppearance.colorBlind = c;
+          var h = document.documentElement;
+          ['sb-theme-dark', 'sb-theme-light', 'sb-cb-none', 'sb-cb-highContrast', 'sb-cb-protanopia', 'sb-cb-deuteranopia', 'sb-cb-tritanopia'].forEach(function (x) { h.classList.remove(x); });
+          h.classList.add('sb-theme-' + window.__sbAppearance.theme, 'sb-cb-' + window.__sbAppearance.colorBlind);
+        }
+      } catch (e) {}
+    })();
+
+    if (!window.Unity) {
+      window.Unity = { call: function(msg) { window.location = 'unity:' + msg; } };
+    }
+
+    function send(obj) {
+      try { Unity.call(JSON.stringify(obj)); } catch (e) { console.error(e); }
+    }
+
+    function __sbSyncAppearance(theme, colorBlind) {
+      theme = theme === 'light' ? 'light' : 'dark';
+      var allowed = { none: 1, highContrast: 1, protanopia: 1, deuteranopia: 1, tritanopia: 1 };
+      if (!allowed[colorBlind]) colorBlind = 'none';
+      window.__sbAppearance.theme = theme;
+      window.__sbAppearance.colorBlind = colorBlind;
+      try {
+        localStorage.setItem('sb_theme', theme);
+        localStorage.setItem('sb_colorBlind', colorBlind);
+      } catch (e) {}
+      var h = document.documentElement;
+      ['sb-theme-dark', 'sb-theme-light', 'sb-cb-none', 'sb-cb-highContrast', 'sb-cb-protanopia', 'sb-cb-deuteranopia', 'sb-cb-tritanopia'].forEach(function (x) { h.classList.remove(x); });
+      h.classList.add('sb-theme-' + theme, 'sb-cb-' + colorBlind);
+      var th = document.getElementById('seg-theme');
+      if (th) {
+        th.querySelectorAll('button[data-theme]').forEach(function (b) {
+          b.classList.toggle('on', b.getAttribute('data-theme') === theme);
+        });
+      }
+      var sg = document.getElementById('seg-colorblind');
+      if (sg) {
+        sg.querySelectorAll('button[data-cb]').forEach(function (b) {
+          b.classList.toggle('on', b.getAttribute('data-cb') === colorBlind);
+        });
+      }
+    }
+
+    function wireAppearanceControls() {
+      var th = document.getElementById('seg-theme');
+      if (th && !th.__sbWired) {
+        th.__sbWired = true;
+        th.addEventListener('click', function (ev) {
+          var b = ev.target.closest('button[data-theme]');
+          if (!b) return;
+          var theme = b.getAttribute('data-theme');
+          send({ action: 'setAppearance', theme: theme, colorBlind: window.__sbAppearance.colorBlind });
+        });
+      }
+      var sg = document.getElementById('seg-colorblind');
+      if (sg && !sg.__sbWired) {
+        sg.__sbWired = true;
+        sg.addEventListener('click', function (ev) {
+          var b = ev.target.closest('button[data-cb]');
+          if (!b) return;
+          var cb = b.getAttribute('data-cb');
+          send({ action: 'setAppearance', theme: window.__sbAppearance.theme, colorBlind: cb });
+        });
+      }
+    }
+
+    function go(id) {
+      document.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('active'); });
+      var el = document.getElementById('view-' + id);
+      if (el) el.classList.add('active');
+      if (id === 'settings') {
+        wireAppearanceControls();
+        __sbSyncAppearance(window.__sbAppearance.theme, window.__sbAppearance.colorBlind);
+      }
+      // Hide AR hint whenever navigating away from mode-select
+      if (id !== 'mode-select') hideArHint();
+    }
+
+    /* ── AR Surface Mode helpers ────────────────────────────── */
+    function startArMode() {
+      send({ action: 'openArMode' });
+    }
+
+    function showArHint(text) {
+      var h = document.getElementById('ar-hint');
+      var t = document.getElementById('ar-hint-text');
+      if (t) t.textContent = text || 'Point your camera at a flat surface…';
+      if (h) h.style.display = 'block';
+    }
+
+    function hideArHint() {
+      var h = document.getElementById('ar-hint');
+      if (h) h.style.display = 'none';
+    }
+
+    // Unity can call these from C# via EvaluateJS
+    window.__sbArHint = showArHint;
+    window.__sbArHintHide = hideArHint;
+    function fillList(elId, labels, paths, opts) {
+      opts = opts || {};
+      var stayInShell = !!opts.stayInShell;
+      var el = document.getElementById(elId);
+      if (!el || !labels || !labels.length) return;
+      el.innerHTML = '';
+      var p = paths || [];
+      for (var i = 0; i < labels.length; i++) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'list-item';
+        b.setAttribute('role', 'listitem');
+        b.textContent = labels[i];
+        (function (label, path, shell) {
+          b.onclick = function () {
+            if (path) send({ action: 'playSign', token: label, path: path, stayInShell: shell });
+            else {
+              var m = /^Letter ([A-Z])$/i.exec(label);
+              if (m) send({ action: 'playSign', token: m[1].toLowerCase(), stayInShell: shell });
+              else send({ action: 'playSign', token: label, stayInShell: shell });
+            }
+          };
+        })(labels[i], p[i] || '', stayInShell);
+        el.appendChild(b);
+      }
+    }
+    window.__sbOnData = function () {
+      var d = window.__sb || {};
+      fillList('list-words', d.wordLabels, d.wordPaths);
+      fillList('list-alpha', d.alphaLabels, d.alphaPaths);
+      fillList('list-vocab', d.vocabLabels, d.vocabPaths, { stayInShell: true });
+    };
+  </script>
+</body>
+</html>
